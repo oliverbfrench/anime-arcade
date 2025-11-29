@@ -1,18 +1,564 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Anime Arcade</title>
-    </head>
-    <body>
-        <h1>Select your version</h1>
-        <p>
-            <a href="AnimeArcade-Desktop.html">Desktop</a>
-            <p>
-                <a href="AnimeArcade-mobile.html">Mobile</a>
-            </p>
-            
-        </p>
-    </body>
-    </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whimsical Arcade: Play with Cleo & Friends</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Lora:ital,wght@1,600&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Quicksand', sans-serif; background-color: #e0f2fe; }
+        h1, h2, h3, .brand, .comic-font { font-family: 'Comic Neue', cursive; }
+        .serif-font { font-family: 'Lora', serif; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.5); border-radius: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; border: 2px solid white; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+
+        @keyframes cloud-drift { 0% { transform: translateX(0); } 50% { transform: translateX(20px); } 100% { transform: translateX(0); } }
+        .animate-cloud { animation: cloud-drift 10s ease-in-out infinite; }
+
+        @keyframes tail-wag { 0% { transform: rotate(0deg); } 25% { transform: rotate(8deg); } 75% { transform: rotate(-8deg); } 100% { transform: rotate(0deg); } }
+        .animate-tail { animation: tail-wag 1.5s ease-in-out infinite; transform-origin: center bottom; }
+
+        @keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(0.1); } }
+        .animate-blink { animation: blink 3.5s infinite; transform-origin: center; }
+
+        @keyframes flash { 0% { opacity: 0; } 50% { opacity: 1; background-color: white; } 100% { opacity: 0; } }
+        .flash-effect { animation: flash 0.5s ease-out; position: absolute; inset: 0; pointer-events: none; z-index: 50; rounded-3xl; }
+
+        /* Paw Cursor Class */
+        .cursor-paw {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="%235D4037"><path d="M12 2C13.1 2 14 2.9 14 4S13.1 6 12 6 10 5.1 10 4 10.9 2 12 2M6 6C7.1 6 8 6.9 8 8S7.1 10 6 10 4 9.1 4 8 4.9 6 6 6M18 6C19.1 6 20 6.9 20 8S19.1 10 18 10 16 9.1 16 8 16.9 6 18 6M12 8C14.2 8 16 9.8 16 12C16 12.8 15.8 13.5 15.4 14.1L17.7 17.6C17.9 17.9 17.8 18.3 17.5 18.5L16.5 19.1C16.2 19.3 15.8 19.2 15.6 18.9L13.8 16.2C13.2 16.4 12.6 16.5 12 16.5C11.4 16.5 10.8 16.4 10.2 16.2L8.4 18.9C8.2 19.2 7.8 19.3 7.5 19.1L6.5 18.5C6.2 18.3 6.1 17.9 6.3 17.6L8.6 14.1C8.2 13.5 8 12.8 8 12 8 9.8 9.8 8 12 8Z"/></svg>') 16 16, auto !important;
+        }
+
+        .cartoon-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border: 4px solid #fff;
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.15);
+            border-radius: 24px;
+        }
+        
+        .game-btn {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .game-btn:active { transform: scale(0.95); }
+
+        .q-card {
+            background: #fff; border: 2px solid #334155; border-radius: 8px;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.1); font-family: 'Lora', serif;
+            position: relative; display: flex; align-items: center; justify-content: center;
+            user-select: none; cursor: pointer; transition: transform 0.1s;
+        }
+        .q-card:hover { transform: translateY(-4px); }
+        .q-card.selected { border-color: #0ea5e9; box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.3); transform: translateY(-8px); z-index: 10; }
+        .q-card .points { font-size: 0.6rem; position: absolute; }
+        .q-card .points.tl { top: 2px; left: 4px; }
+        .q-card .points.br { bottom: 2px; right: 4px; transform: rotate(180deg); }
+        .q-card .letter { font-size: 1.5rem; font-weight: bold; color: #1e293b; }
+
+        .avatar-3d { filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); transition: transform 0.3s ease; }
+        .avatar-3d:hover { transform: scale(1.05) translateY(-5px); }
+    </style>
+</head>
+<body class="text-slate-700 h-screen overflow-hidden selection:bg-sky-200">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- 1. LOCAL DATABASE SERVICE ---
+        const DB_KEY = 'whimsical_arcade_v4_desktop';
+        const LocalDB = {
+            getData: () => {
+                const data = localStorage.getItem(DB_KEY);
+                return data ? JSON.parse(data) : { user: { username: 'New Friend', avatar: null, history: [] } };
+            },
+            saveData: (data) => {
+                try { localStorage.setItem(DB_KEY, JSON.stringify(data)); } catch (e) { console.error("Storage full"); }
+            },
+            updateProfile: (updates) => {
+                const data = LocalDB.getData();
+                data.user = { ...data.user, ...updates };
+                LocalDB.saveData(data);
+                return data.user;
+            },
+            addHistory: (gameName, won, details, opponent) => {
+                const data = LocalDB.getData();
+                data.user.history.push({ game: gameName, won: won, score: details, opponent: opponent, timestamp: Date.now() });
+                LocalDB.saveData(data);
+                return data.user;
+            }
+        };
+
+        // --- 2. OPPONENT DATA ---
+        const OPPONENTS = {
+            jack: {
+                id: 'jack', name: 'Jack the Cat', color: 'text-gray-500', bgColor: 'bg-slate-100', borderColor: 'border-slate-300',
+                avatarSvg: (
+                    <svg viewBox="0 0 200 200" className="w-full h-full avatar-3d">
+                        <defs>
+                            <radialGradient id="jackBody" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" stopColor="#ffffff" /><stop offset="100%" stopColor="#e5e7eb" /></radialGradient>
+                            <filter id="fluffCat" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="3" /></filter>
+                        </defs>
+                        <ellipse cx="100" cy="120" rx="70" ry="60" fill="url(#jackBody)" filter="url(#fluffCat)" />
+                        <circle cx="100" cy="90" r="55" fill="url(#jackBody)" filter="url(#fluffCat)" />
+                        <path d="M50 40 L70 80 L90 50 Z" fill="#9ca3af" filter="url(#fluffCat)" />
+                        <path d="M150 40 L130 80 L110 50 Z" fill="#9ca3af" filter="url(#fluffCat)" />
+                        <ellipse cx="100" cy="100" rx="10" ry="8" fill="#d1d5db" filter="url(#fluffCat)" />
+                        <path d="M92 98 L108 98 L100 106 Z" fill="#9ca3af" />
+                        <circle cx="80" cy="85" r="6" fill="#3b82f6" /><circle cx="82" cy="83" r="2" fill="white" />
+                        <circle cx="120" cy="85" r="6" fill="#3b82f6" /><circle cx="122" cy="83" r="2" fill="white" />
+                        <path d="M60 100 L90 105 M60 110 L90 110 M60 120 L90 115" stroke="#9ca3af" strokeWidth="1" fill="none" opacity="0.6"/>
+                        <path d="M140 100 L110 105 M140 110 L110 110 M140 120 L110 115" stroke="#9ca3af" strokeWidth="1" fill="none" opacity="0.6"/>
+                    </svg>
+                )
+            },
+            biglil: {
+                id: 'biglil', name: 'Big Lil', color: 'text-amber-700', bgColor: 'bg-amber-50', borderColor: 'border-amber-200',
+                avatarSvg: (
+                    <svg viewBox="0 0 200 200" className="w-full h-full avatar-3d">
+                        <defs>
+                            <radialGradient id="lilBody" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" stopColor="#fff" /><stop offset="100%" stopColor="#fef3c7" /></radialGradient>
+                        </defs>
+                        <ellipse cx="100" cy="120" rx="75" ry="65" fill="url(#lilBody)" filter="url(#fluffCat)" />
+                        <circle cx="100" cy="90" r="58" fill="url(#lilBody)" filter="url(#fluffCat)" />
+                        <path d="M45 35 L65 75 L85 45 Z" fill="#fff" filter="url(#fluffCat)" stroke="#e5e7eb" strokeWidth="1" />
+                        <path d="M155 35 L135 75 L115 45 Z" fill="#fff" filter="url(#fluffCat)" stroke="#e5e7eb" strokeWidth="1"/>
+                        <path d="M92 98 L108 98 L100 106 Z" fill="#fca5a5" />
+                        <circle cx="80" cy="85" r="6" fill="#22c55e" /><circle cx="82" cy="83" r="2" fill="white" />
+                        <circle cx="120" cy="85" r="6" fill="#22c55e" /><circle cx="122" cy="83" r="2" fill="white" />
+                        <path d="M60 100 L90 105 M60 110 L90 110 M60 120 L90 115" stroke="#d1d5db" strokeWidth="1" fill="none" />
+                        <path d="M140 100 L110 105 M140 110 L110 110 M140 120 L110 115" stroke="#d1d5db" strokeWidth="1" fill="none" />
+                    </svg>
+                )
+            }
+        };
+
+        // --- 3. UI HELPERS ---
+        const IconBase = ({ d, className, ...props }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d={d} /></svg>);
+        const Icons = {
+            Brain: (p) => <IconBase d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" {...p} />,
+            Sparkles: (p) => <IconBase d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" {...p} />,
+            Gamepad2: (p) => <IconBase d="M12 12h.01M8 12h.01M16 12h.01M21 12a9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9 9 9 0 0 1 9 9" {...p} />,
+            User: (p) => <IconBase d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2 M12 3a4 4 0 0 0-4 4v2a4 4 0 0 0 8 0V7a4 4 0 0 0-4-4Z" {...p} />,
+            Trophy: (p) => <IconBase d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M8 22v-4.172a2 2 0 0 0-.586-1.414L5 12V6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v6l-2.414 4.414A2 2 0 0 0 16 17.828V22" {...p} />,
+            Sword: (p) => <IconBase d="M14.5 17.5 3 6V3h3l11.5 11.5 M13 19l6-6 M16 16l4 4 M19 21l2-2" {...p} />,
+            ChevronLeft: (p) => <IconBase d="m15 18-6-6 6-6" {...p} />,
+            Save: (p) => <IconBase d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" {...p} />,
+            Refresh: (p) => <IconBase d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8 M21 3v5h-5 M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16 M3 21v-5h5" {...p} />,
+            Camera: (p) => <IconBase d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" {...p} />,
+            Book: (p) => <IconBase d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" {...p} ><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></IconBase>
+        };
+
+        const Button = ({ children, onClick, variant = "primary", className = "", disabled = false }) => {
+            const variants = {
+                primary: "bg-sky-400 hover:bg-sky-500 text-white shadow-lg shadow-sky-400/30 border-b-4 border-sky-600 active:border-b-0 active:translate-y-1",
+                secondary: "bg-rose-400 hover:bg-rose-500 text-white shadow-lg shadow-rose-400/30 border-b-4 border-rose-600 active:border-b-0 active:translate-y-1",
+                teal: "bg-teal-400 hover:bg-teal-500 text-white shadow-lg shadow-teal-400/30 border-b-4 border-teal-600 active:border-b-0 active:translate-y-1",
+                outline: "border-2 border-sky-400 text-sky-500 hover:bg-sky-50",
+                ghost: "hover:bg-sky-100 text-slate-500"
+            };
+            return <button onClick={onClick} disabled={disabled} className={`game-btn px-6 py-2 rounded-2xl font-bold uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}>{children}</button>;
+        };
+
+        const Card = ({ children, title, icon: IconComponent, className = "" }) => (
+            <div className={`cartoon-panel p-6 ${className} animate-fade-in`}>
+                {(title || IconComponent) && (
+                    <div className="flex items-center gap-3 mb-6 border-b-2 border-slate-100 pb-3">
+                        {IconComponent && <IconComponent className="w-8 h-8 text-rose-400" />}
+                        {title && <h2 className="text-2xl font-black text-slate-700 tracking-wide">{title.toUpperCase()}</h2>}
+                    </div>
+                )}
+                {children}
+            </div>
+        );
+
+        // --- 4. CLEO AVATAR ---
+        const CleoAvatar = ({ context, opponentName }) => {
+            const [comment, setComment] = React.useState("Hi! I'm Cleo!");
+            React.useEffect(() => {
+                const opp = opponentName || "Opponent";
+                const comments = {
+                    menu: ["Let's play a game!", "I'm ready when you are!", "Do you have treats?", "My tail is wagging!"],
+                    mastermind_thinking: ["Sniff out the pattern...", "Use your nose!", "I believe in you!"],
+                    mastermind_win: ["You did it! Woof!", "High five!", "Genius!"],
+                    mastermind_loss: ["Ruh roh!", "Try again, friend!", "So close!"],
+                    mancala_player: ["Your turn! Move the shiny rocks!", "Big moves!", `Don't let ${opp} capture!`],
+                    mancala_cpu: [`${opp} is thinking...`, "Grrr... watch out!", "I'm watching the board!"],
+                    mancala_win: ["We won! Zoomies time!", "Who's a good player? You are!", "YAY!"],
+                    mancala_loss: ["Aww, next time!", "It's okay, I still love you.", "Let's rematch!"],
+                    quiddler_player: ["Spell something tasty!", "I love the letter Q!", "Do you have a big word?"],
+                    quiddler_cpu: [`${opp} is reading the dictionary...`, "Boring...", "I bet they have a Z!"],
+                    quiddler_win: ["You're a word wizard!", "S-M-A-R-T!", "Teach me to spell 'Treat'!"],
+                    quiddler_loss: ["Aw, nice try!", "Words are hard.", "Next round is yours!"],
+                    profile: ["You look paw-some!", "Great photo!", "Is that you? Nice!"]
+                };
+                const updateComment = () => {
+                    const pool = comments[context] || comments['menu'];
+                    setComment(pool[Math.floor(Math.random() * pool.length)]);
+                };
+                updateComment();
+                const interval = setInterval(updateComment, 8000);
+                return () => clearInterval(interval);
+            }, [context, opponentName]);
+
+            return (
+                <div className="fixed bottom-0 right-4 z-50 flex items-end pointer-events-none transform translate-y-8 scale-75 md:scale-90 lg:scale-100 origin-bottom-right" style={{pointerEvents: 'none', right: '5%', bottom: '-10px'}}>
+                    <div className="mb-[300px] mr-[-80px] bg-white text-slate-800 p-6 rounded-3xl rounded-br-none shadow-xl border-4 border-sky-200 animate-float max-w-[220px] z-50 relative">
+                        <p className="comic-font font-bold text-lg leading-tight text-center">{comment}</p>
+                    </div>
+                    <svg width="350" height="350" viewBox="0 0 400 400" className="avatar-3d">
+                        <defs>
+                            <radialGradient id="cleoBody" cx="40%" cy="30%" r="80%"><stop offset="0%" stopColor="#ffffff" /><stop offset="100%" stopColor="#f3e8d2" /></radialGradient>
+                            <filter id="fluff3D" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" /><feDisplacementMap in="SourceGraphic" in2="noise" scale="4" /><feGaussianBlur stdDeviation="0.5" /></filter>
+                        </defs>
+                        <g className="animate-float">
+                            <path d="M300 250 Q 360 220 340 180" stroke="#fdfbf7" strokeWidth="40" strokeLinecap="round" fill="none" filter="url(#fluff3D)" className="animate-tail" />
+                            <ellipse cx="200" cy="320" rx="110" ry="90" fill="url(#cleoBody)" filter="url(#fluff3D)" />
+                            <ellipse cx="120" cy="350" rx="35" ry="30" fill="url(#cleoBody)" filter="url(#fluff3D)" />
+                            <ellipse cx="280" cy="350" rx="35" ry="30" fill="url(#cleoBody)" filter="url(#fluff3D)" />
+                            <g>
+                                <circle cx="200" cy="180" r="95" fill="url(#cleoBody)" filter="url(#fluff3D)" />
+                                <path d="M120 140 Q 80 200 100 260" stroke="#eaddcf" strokeWidth="40" fill="none" filter="url(#fluff3D)" />
+                                <path d="M280 140 Q 320 200 300 260" stroke="#eaddcf" strokeWidth="40" fill="none" filter="url(#fluff3D)" />
+                                <ellipse cx="200" cy="215" rx="50" ry="40" fill="#fffbf2" filter="url(#fluff3D)" />
+                                <g transform="translate(200, 200)"><path d="M-15 -5 Q 0 -15 15 -5 Q 0 15 -15 -5" fill="#5D4037" /><ellipse cx="-5" cy="-7" rx="3" ry="2" fill="white" opacity="0.3" /></g>
+                                <g className="animate-blink"><circle cx="165" cy="170" r="10" fill="#2d1b15" /><circle cx="168" cy="166" r="3" fill="white" /><circle cx="235" cy="170" r="10" fill="#2d1b15" /><circle cx="238" cy="166" r="3" fill="white" /></g>
+                                <ellipse cx="160" cy="340" rx="28" ry="22" fill="#fff" filter="url(#fluff3D)" /><path d="M150 340 L150 350 M160 340 L160 350" stroke="#eecfa1" strokeWidth="2" />
+                                <ellipse cx="240" cy="340" rx="28" ry="22" fill="#fff" filter="url(#fluff3D)" /><path d="M230 340 L230 350 M240 340 L240 350" stroke="#eecfa1" strokeWidth="2" />
+                                <path d="M150 260 Q 200 300 250 260" stroke="#ec4899" strokeWidth="14" strokeLinecap="round" fill="none" /><circle cx="200" cy="280" r="8" fill="#facc15" stroke="#f59e0b" strokeWidth="2" />
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+            );
+        };
+
+        // --- 5. OPPONENT SELECTOR ---
+        const OpponentSelector = ({ onSelect, onCancel }) => (
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+                <div className="cartoon-panel max-w-2xl w-full p-8 relative">
+                    <button onClick={onCancel} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">X</button>
+                    <h2 className="text-3xl font-black text-center text-slate-700 mb-8">CHOOSE YOUR CHALLENGER</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div onClick={() => onSelect(OPPONENTS.jack)} className="cursor-pointer group relative p-6 bg-slate-50 border-4 border-slate-200 rounded-3xl hover:border-slate-400 hover:shadow-xl transition-all transform hover:-translate-y-2">
+                            <div className="w-32 h-32 mx-auto mb-4 drop-shadow-lg group-hover:scale-110 transition-transform">{OPPONENTS.jack.avatarSvg}</div>
+                            <h3 className="text-2xl font-black text-center text-slate-600">JACK</h3>
+                            <p className="text-center text-slate-400 text-sm font-bold">The Ragdoll</p>
+                        </div>
+                        <div onClick={() => onSelect(OPPONENTS.biglil)} className="cursor-pointer group relative p-6 bg-amber-50 border-4 border-amber-200 rounded-3xl hover:border-amber-400 hover:shadow-xl transition-all transform hover:-translate-y-2">
+                            <div className="w-32 h-32 mx-auto mb-4 drop-shadow-lg group-hover:scale-110 transition-transform">{OPPONENTS.biglil.avatarSvg}</div>
+                            <h3 className="text-2xl font-black text-center text-amber-800">BIG LIL</h3>
+                            <p className="text-center text-amber-600 text-sm font-bold">The Ragdoll</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- 6. GAME: QUIDDLER ---
+        const QuiddlerGame = ({ onGameEnd, setCleoContext, opponent }) => {
+            const opp = opponent || OPPONENTS.jack; // Safety fallback
+            const CARD_DISTRIBUTION = { A:{count:10,val:2}, B:{count:2,val:8}, C:{count:2,val:8}, D:{count:4,val:5}, E:{count:12,val:2}, F:{count:2,val:6}, G:{count:4,val:6}, H:{count:2,val:7}, I:{count:8,val:2}, J:{count:2,val:13}, K:{count:2,val:8}, L:{count:4,val:3}, M:{count:2,val:5}, N:{count:6,val:5}, O:{count:8,val:2}, P:{count:2,val:6}, Q:{count:2,val:15}, R:{count:6,val:5}, S:{count:4,val:3}, T:{count:6,val:3}, U:{count:6,val:4}, V:{count:2,val:11}, W:{count:2,val:10}, X:{count:2,val:12}, Y:{count:4,val:4}, Z:{count:2,val:14}, QU:{count:2,val:9}, IN:{count:2,val:7}, ER:{count:2,val:7}, CL:{count:2,val:10}, TH:{count:2,val:9} };
+            const [deck, setDeck] = React.useState([]);
+            const [discardPile, setDiscardPile] = React.useState([]);
+            const [playerHand, setPlayerHand] = React.useState([]);
+            const [cpuHand, setCpuHand] = React.useState([]);
+            const [round, setRound] = React.useState(1);
+            const [turn, setTurn] = React.useState('player');
+            const [selectedIndices, setSelectedIndices] = React.useState([]);
+            const [hasDrawn, setHasDrawn] = React.useState(false);
+            const [gamePhase, setGamePhase] = React.useState('playing');
+            const [playerWords, setPlayerWords] = React.useState([]);
+            const [cpuWords, setCpuWords] = React.useState([]);
+            const [scores, setScores] = React.useState({ player: 0, cpu: 0 });
+            const [msg, setMsg] = React.useState("Draw a card!");
+
+            React.useEffect(() => { initGame(); }, []);
+
+            const createDeck = () => {
+                let d = []; let id = 0;
+                Object.keys(CARD_DISTRIBUTION).forEach(key => { for(let i=0; i<CARD_DISTRIBUTION[key].count; i++) { d.push({ id: id++, letter: key, val: CARD_DISTRIBUTION[key].val }); }});
+                return d.sort(() => Math.random() - 0.5);
+            };
+            const deal = (currentDeck, cardCount) => ({ p: currentDeck.slice(0, cardCount), c: currentDeck.slice(cardCount, cardCount * 2), rem: currentDeck.slice(cardCount * 2) });
+            const initGame = () => { setScores({ player: 0, cpu: 0 }); startRound(1); };
+            const startRound = (r) => {
+                if (r > 8) { endGame(); return; }
+                setRound(r);
+                const cardCount = r + 2; let d = createDeck(); const { p, c, rem } = deal(d, cardCount);
+                setPlayerHand(p); setCpuHand(c); setDiscardPile([rem.pop()]); setDeck(rem);
+                setTurn('player'); setHasDrawn(false); setGamePhase('playing'); setPlayerWords([]); setCpuWords([]); setSelectedIndices([]); setMsg(`Round ${r}: Deal ${cardCount} cards. Your Turn!`); setCleoContext('quiddler_player');
+            };
+            const drawCard = (source) => {
+                if (turn !== 'player' || hasDrawn) return;
+                let card;
+                if (source === 'deck') { if (deck.length === 0) return; const newDeck = [...deck]; card = newDeck.pop(); setDeck(newDeck); } 
+                else { const newDiscard = [...discardPile]; card = newDiscard.pop(); setDiscardPile(newDiscard); }
+                setPlayerHand([...playerHand, card]); setHasDrawn(true); setMsg("Select a card to discard, or form words to go out.");
+            };
+            const discard = (index) => {
+                if (!hasDrawn) return;
+                const card = playerHand[index];
+                setPlayerHand(playerHand.filter((_, i) => i !== index));
+                setDiscardPile([...discardPile, card]); setHasDrawn(false); setSelectedIndices([]); endTurn();
+            };
+            const toggleSelect = (index) => { if (selectedIndices.includes(index)) { setSelectedIndices(selectedIndices.filter(i => i !== index)); } else { setSelectedIndices([...selectedIndices, index]); } };
+            const formWord = () => {
+                if (selectedIndices.length < 2) { alert("Words must be at least 2 cards!"); return; }
+                setPlayerWords([...playerWords, selectedIndices.map(i => playerHand[i])]);
+                setPlayerHand(playerHand.filter((_, i) => !selectedIndices.includes(i))); setSelectedIndices([]);
+            };
+            const goOut = () => { if (playerHand.length !== 1) { alert("You must have exactly one card left to discard to go out!"); return; } setDiscardPile([...discardPile, playerHand[0]]); setPlayerHand([]); calculateRoundScore(true); };
+            const endTurn = () => { setTurn('cpu'); setMsg(`${opp.name} is thinking...`); setCleoContext('quiddler_cpu'); setTimeout(cpuPlay, 1500); };
+            const cpuPlay = () => {
+                let currentCpuHand = [...cpuHand]; let drawnCard; let newDeck = [...deck]; let newDiscard = [...discardPile];
+                if (newDeck.length > 0) { drawnCard = newDeck.pop(); setDeck(newDeck); } else { drawnCard = newDiscard.pop(); setDiscardPile(newDiscard); }
+                currentCpuHand.push(drawnCard); currentCpuHand.sort((a, b) => a.val - b.val);
+                setDiscardPile(prev => [...prev, currentCpuHand.pop()]); setCpuHand(currentCpuHand);
+                if (Math.random() > 0.8) { setMsg(`${opp.name} Went Out!`); setCpuWords([currentCpuHand]); setCpuHand([]); calculateRoundScore(false); } 
+                else { setTurn('player'); setMsg("Your Turn!"); setCleoContext('quiddler_player'); }
+            };
+            const calculateRoundScore = (playerWentOutFirst) => {
+                let pScore = 0; let cScore = 0;
+                playerWords.forEach(word => word.forEach(c => pScore += c.val)); playerHand.forEach(c => pScore -= c.val);
+                if (playerWentOutFirst) {
+                    const split = Math.floor(cpuHand.length / 2); const cpuWord = cpuHand.slice(0, split); const cpuLeft = cpuHand.slice(split);
+                    cpuWord.forEach(c => cScore += c.val); cpuLeft.forEach(c => cScore -= c.val); setCpuWords([cpuWord]); setCpuHand(cpuLeft);
+                } else { cpuWords.forEach(word => word.forEach(c => cScore += c.val)); }
+                let pWordCount = playerWords.length; let cWordCount = cpuWords.length; if (pWordCount > cWordCount) pScore += 10; else if (cWordCount > pWordCount) cScore += 10;
+                setScores(prev => ({ player: prev.player + pScore, cpu: prev.cpu + cScore })); setGamePhase('round_over'); setMsg(`Round Over! P: ${pScore} | ${opp.name}: ${cScore}`);
+            };
+            const nextRound = () => { startRound(round + 1); };
+            const endGame = () => { setGamePhase('game_over'); const won = scores.player > scores.cpu; setCleoContext(won ? 'quiddler_win' : 'quiddler_loss'); onGameEnd('Quiddler', won, `Score: ${scores.player} - ${scores.cpu}`, opp.name); };
+            const QCard = ({ card, onClick, selected, onContextMenu }) => (
+                <div onClick={onClick} onContextMenu={onContextMenu} className={`q-card w-16 h-24 bg-white rounded-lg border-2 flex flex-col items-center justify-center relative shadow-sm hover:-translate-y-1 transition-transform cursor-pointer ${selected ? 'border-sky-500 ring-2 ring-sky-200' : 'border-slate-300'}`}>
+                    <span className="text-xs absolute top-1 left-1 text-slate-400">{card.val}</span><span className="text-2xl font-serif font-bold text-slate-800">{card.letter}</span><span className="text-xs absolute bottom-1 right-1 text-slate-400 rotate-180">{card.val}</span>
+                </div>
+            );
+
+            return (
+                <div className="flex flex-col h-full gap-4 max-w-5xl mx-auto w-full">
+                    <div className="flex justify-between items-center cartoon-panel py-3 px-6">
+                        <div className="text-xl font-bold text-sky-600">Round {round}/8</div>
+                        <div className="flex gap-8 items-center"><div className="text-center"><div className="text-xs uppercase text-slate-400 font-bold">You</div><div className="text-2xl font-black text-slate-700">{scores.player}</div></div><div className="text-center flex flex-col items-center"><div className="w-8 h-8 mb-1 rounded-full overflow-hidden border-2 border-white shadow-sm">{opp.avatarSvg}</div><div className="text-2xl font-black text-slate-700">{scores.cpu}</div></div></div>
+                    </div>
+                    <div className="flex-1 flex flex-col gap-4 relative">
+                        <div className={`h-32 rounded-2xl p-4 flex flex-col items-center justify-center relative border-4 ${opp.bgColor} ${opp.borderColor}`}>
+                            <div className="absolute top-2 left-4 text-xs font-bold text-slate-400 uppercase tracking-widest">{opp.name}'s Words</div>
+                            <div className="flex gap-4">{cpuWords.map((word, wIdx) => (<div key={wIdx} className="flex -space-x-8 hover:space-x-1 transition-all">{word.map((c, i) => <QCard key={i} card={c} />)}</div>))}{cpuWords.length === 0 && <span className="text-slate-400 italic text-sm">Waiting for words...</span>}</div>
+                            <div className="absolute -top-6 right-4 flex -space-x-2">{cpuHand.map((_, i) => (<div key={i} className="w-10 h-14 bg-sky-200 border-2 border-white rounded shadow-sm"></div>))}</div>
+                        </div>
+                        <div className="flex-1 flex items-center justify-center gap-12">
+                            <div onClick={() => drawCard('deck')} className={`w-24 h-36 bg-sky-500 rounded-xl border-4 border-white shadow-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform ${turn === 'player' && !hasDrawn ? 'animate-pulse ring-4 ring-sky-200' : ''}`}><span className="text-white font-bold text-xl">DRAW</span><span className="absolute bottom-2 text-sky-200 text-xs">{deck.length}</span></div>
+                            <div className="comic-font text-xl text-sky-600 font-bold bg-white/80 px-6 py-2 rounded-full shadow-sm">{msg}</div>
+                            <div onClick={() => drawCard('discard')} className={`w-24 h-36 bg-slate-100 rounded-xl border-4 border-slate-300 shadow-lg flex items-center justify-center cursor-pointer hover:scale-105 transition-transform relative ${turn === 'player' && !hasDrawn ? 'ring-4 ring-sky-200' : ''}`}>{discardPile.length > 0 ? (<div className="w-full h-full flex items-center justify-center"><span className="text-4xl font-serif font-bold text-slate-700">{discardPile[discardPile.length-1].letter}</span><span className="absolute top-2 left-2 text-sm text-slate-400">{discardPile[discardPile.length-1].val}</span></div>) : <span className="text-slate-300">Empty</span>}<span className="absolute -bottom-8 font-bold text-slate-400 text-xs uppercase">Discard Pile</span></div>
+                        </div>
+                        <div className="bg-white/90 backdrop-blur rounded-t-3xl p-6 border-t-4 border-sky-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] pb-32">
+                            <div className="flex justify-between items-start mb-4">
+                                <div><h3 className="text-lg font-bold text-slate-700 mb-2">Your Words</h3><div className="flex gap-6 min-h-[60px]">{playerWords.map((word, wIdx) => (<div key={wIdx} className="flex -space-x-6 hover:space-x-1 transition-all cursor-default">{word.map((c, i) => <QCard key={i} card={c} />)}</div>))}{playerWords.length === 0 && <span className="text-slate-400 text-sm italic py-2">Select cards and click 'Form Word' or Right-Click to select</span>}</div></div>
+                                <div className="flex gap-2"><Button onClick={formWord} variant="teal" disabled={selectedIndices.length < 2 || !hasDrawn}>Form Word</Button><Button onClick={goOut} variant="secondary" disabled={playerHand.length !== 1}>GO OUT!</Button></div>
+                            </div>
+                            <div className="border-t-2 border-slate-100 pt-4"><div className="flex justify-center gap-2 overflow-x-auto pb-4 cursor-paw">{playerHand.map((c, i) => (<div key={c.id} className="relative group"><QCard card={c} selected={selectedIndices.includes(i)} onClick={() => hasDrawn ? discard(i) : toggleSelect(i)} onContextMenu={(e) => { e.preventDefault(); toggleSelect(i); }} />{hasDrawn && <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-rose-500 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Discard</div>}</div>))}</div><p className="text-center text-xs text-slate-400 font-bold uppercase tracking-widest mt-2">{hasDrawn ? "Click a card to Discard" : "Draw a card to start turn"}</p></div>
+                        </div>
+                    </div>
+                    {(gamePhase === 'round_over' || gamePhase === 'game_over') && (
+                        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-40 flex items-center justify-center animate-fade-in">
+                            <div className="cartoon-panel p-8 text-center max-w-md w-full relative">
+                                <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24">{opp.avatarSvg}</div>
+                                <h2 className="text-3xl font-black text-slate-800 mb-4 mt-8">{gamePhase === 'game_over' ? "GAME OVER!" : "ROUND COMPLETE"}</h2>
+                                <div className="flex justify-around mb-6 text-xl font-bold"><div className="text-sky-500">You: {scores.player}</div><div className={`${opp.color} text-rose-500`}>{opp.name}: {scores.cpu}</div></div>
+                                {gamePhase === 'game_over' ? (<div className="space-y-4"><div className={`text-2xl font-black ${scores.player > scores.cpu ? 'text-green-500' : 'text-slate-500'}`}>{scores.player > scores.cpu ? "YOU WON THE GAME!" : "Nice try!"}</div><Button onClick={onGameEnd} className="w-full">Back to Menu</Button></div>) : (<Button onClick={nextRound} className="w-full">Next Round ({round+1}/8)</Button>)}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- 8. GAME: MANCALA ---
+        const MancalaGame = ({ onGameEnd, setCleoContext, opponent }) => {
+            const opp = opponent || OPPONENTS.jack;
+            const [board, setBoard] = React.useState(Array(14).fill(4).map((_, i) => (i === 6 || i === 13) ? 0 : 4));
+            const [isPlayerTurn, setIsPlayerTurn] = React.useState(true);
+            const [gameMessage, setGameMessage] = React.useState("Your Turn");
+            const [gameOver, setGameOver] = React.useState(false);
+
+            React.useEffect(() => {
+                if(!gameOver) setCleoContext(isPlayerTurn ? 'mancala_player' : 'mancala_cpu');
+                if (!isPlayerTurn && !gameOver) { const timer = setTimeout(makeCpuMove, 1500); return () => clearTimeout(timer); }
+            }, [isPlayerTurn, gameOver]);
+
+            const sow = (index, currentBoard, isP1) => {
+                let seeds = currentBoard[index]; currentBoard[index] = 0; let curr = index;
+                while (seeds > 0) { curr = (curr + 1) % 14; if (isP1 && curr === 13) continue; if (!isP1 && curr === 6) continue; currentBoard[curr]++; seeds--; }
+                return curr;
+            };
+            const checkGameOver = (currentBoard) => {
+                const p1Empty = currentBoard.slice(0, 6).every(s => s === 0); const p2Empty = currentBoard.slice(7, 13).every(s => s === 0);
+                if (p1Empty || p2Empty) {
+                    let finalBoard = [...currentBoard];
+                    if (p1Empty) { for (let i = 7; i <= 12; i++) { finalBoard[13] += finalBoard[i]; finalBoard[i] = 0; } } else { for (let i = 0; i <= 5; i++) { finalBoard[6] += finalBoard[i]; finalBoard[i] = 0; } }
+                    setBoard(finalBoard); setGameOver(true); const won = finalBoard[6] > finalBoard[13]; setGameMessage(won ? "YOU WON!" : finalBoard[6] === finalBoard[13] ? "DRAW" : `${opp.name} WON`); setCleoContext(won ? 'mancala_win' : 'mancala_loss'); onGameEnd('Mancala', won, `Score: ${finalBoard[6]} - ${finalBoard[13]}`, opp.name); return true;
+                } return false;
+            };
+            const handlePitClick = (index) => {
+                if (!isPlayerTurn || gameOver || board[index] === 0 || index > 5) return;
+                let newBoard = [...board]; let lastIdx = sow(index, newBoard, true);
+                if (lastIdx >= 0 && lastIdx <= 5 && newBoard[lastIdx] === 1) { const opposite = 12 - lastIdx; if (newBoard[opposite] > 0) { newBoard[6] += newBoard[opposite] + 1; newBoard[opposite] = 0; newBoard[lastIdx] = 0; } }
+                setBoard(newBoard); if (!checkGameOver(newBoard)) { if (lastIdx === 6) { setGameMessage("Go Again!"); } else { setIsPlayerTurn(false); setGameMessage("Thinking..."); } }
+            };
+            const makeCpuMove = () => {
+                setBoard(prev => {
+                    let newBoard = [...prev]; const validMoves = [7,8,9,10,11,12].filter(i => newBoard[i] > 0);
+                    if (validMoves.length === 0) return newBoard; 
+                    let move = validMoves[Math.floor(Math.random() * validMoves.length)];
+                    for (let m of validMoves) { let testBoard = [...newBoard]; if (sow(m, testBoard, false) === 13) { move = m; break; } }
+                    let lastIdx = sow(move, newBoard, false);
+                    if (lastIdx >= 7 && lastIdx <= 12 && newBoard[lastIdx] === 1) { const opposite = 12 - lastIdx; if (newBoard[opposite] > 0) { newBoard[13] += newBoard[opposite] + 1; newBoard[opposite] = 0; newBoard[lastIdx] = 0; } }
+                    if (!checkGameOver(newBoard)) { if (lastIdx === 13) { setGameMessage(`${opp.name} Goes Again!`); setTimeout(() => setIsPlayerTurn(false), 500); setIsPlayerTurn(true); } else { setIsPlayerTurn(true); setGameMessage("Your Turn"); } }
+                    return newBoard;
+                });
+            };
+            const Pit = ({ count, onClick, isStore = false, isOpponent = false }) => (
+                <div onClick={onClick} onContextMenu={(e) => { e.preventDefault(); if(!isStore && !isOpponent) onClick(); }} className={`relative flex items-center justify-center rounded-3xl transition-all ${isStore ? 'w-24 h-48 sm:w-28 sm:h-56' : 'w-16 h-16 sm:w-24 sm:h-24'} ${isOpponent ? `${opp.bgColor} border-4 ${opp.borderColor}` : 'bg-sky-100 border-4 border-sky-200'} ${!isStore && !isOpponent && count > 0 && !gameOver ? 'cursor-paw hover:bg-sky-200 hover:-translate-y-1 shadow-md' : ''}`}>
+                    <div className="flex flex-wrap gap-1 justify-center max-w-[70%] z-10 pointer-events-none">{Array(Math.min(count, 12)).fill(0).map((_, i) => <div key={i} className={`w-4 h-4 rounded-full ${isOpponent ? 'bg-slate-400' : 'bg-sky-400'} shadow-sm border border-white`} />)}</div>
+                    {count > 12 && <span className="absolute top-2 right-2 font-bold text-white text-xs bg-slate-400 px-1.5 py-0.5 rounded-full">+{count-12}</span>}<span className="absolute -bottom-8 text-lg font-bold text-slate-400 font-mono">{count}</span>
+                </div>
+            );
+            return (
+                <div className="flex flex-col items-center h-full gap-6">
+                    <div className="flex justify-between w-full max-w-2xl px-8 items-end"><div className={`${opp.color} font-bold text-xl flex items-center gap-2`}><div className="w-8 h-8 rounded-full border border-white shadow-sm overflow-hidden">{opp.avatarSvg}</div>{opp.name}: {board[13]}</div><div className={`comic-font font-black text-3xl tracking-widest bg-white px-6 py-2 rounded-full shadow-lg ${isPlayerTurn ? 'text-sky-500 animate-bounce' : 'text-slate-400'}`}>{gameMessage}</div><div className="text-sky-500 font-bold text-xl">YOU: {board[6]}</div></div>
+                    <div className="cartoon-panel p-8 relative bg-[#fdfbf7] border-8 border-[#e2e8f0]">
+                        <div className="flex gap-6 items-center"><Pit count={board[13]} isStore isOpponent /><div className="flex flex-col gap-6"><div className="flex gap-2 sm:gap-4">{[12,11,10,9,8,7].map(i => <Pit key={i} count={board[i]} isOpponent />)}</div><div className="flex gap-2 sm:gap-4">{[0,1,2,3,4,5].map(i => <Pit key={i} count={board[i]} onClick={() => handlePitClick(i)} />)}</div></div><Pit count={board[6]} isStore /></div>
+                    </div>
+                    {gameOver && <Button onClick={() => { setBoard(Array(14).fill(4).map((_, i) => (i === 6 || i === 13) ? 0 : 4)); setGameOver(false); setIsPlayerTurn(true); setGameMessage("Ready?"); }}>Play Again</Button>}
+                </div>
+            );
+        };
+
+        // --- 9. MASTERMIND GAME (Existing - Updated for Opponent) ---
+        const MastermindGame = ({ onGameEnd, setCleoContext, opponent }) => {
+            const opp = opponent || OPPONENTS.jack;
+            const COLORS = ["red", "blue", "green", "yellow", "white", "black"];
+            const [secretCode, setSecretCode] = React.useState([]);
+            const [guesses, setGuesses] = React.useState([]); 
+            const [currentGuess, setCurrentGuess] = React.useState([null, null, null, null]);
+            const [selectedColor, setSelectedColor] = React.useState(null);
+            const [gameOver, setGameOver] = React.useState(false);
+            const [won, setWon] = React.useState(false);
+
+            React.useEffect(() => { startNewGame(); }, []);
+            React.useEffect(() => { if(!gameOver) setCleoContext('mastermind_thinking'); }, [guesses]);
+
+            const startNewGame = () => { const code = Array.from({ length: 4 }, () => COLORS[Math.floor(Math.random() * COLORS.length)]); setSecretCode(code); setGuesses([]); setCurrentGuess([null, null, null, null]); setGameOver(false); setWon(false); setCleoContext('mastermind_thinking'); };
+            const handlePegClick = (index) => { if (gameOver || !selectedColor) return; const newGuess = [...currentGuess]; newGuess[index] = selectedColor; setCurrentGuess(newGuess); };
+            const submitGuess = () => {
+                if (currentGuess.includes(null)) return;
+                let black = 0, white = 0; const secretCopy = [...secretCode]; const guessCopy = [...currentGuess];
+                guessCopy.forEach((color, i) => { if (color === secretCopy[i]) { black++; secretCopy[i] = null; guessCopy[i] = 'MATCH'; } });
+                guessCopy.forEach((color) => { if (color !== 'MATCH') { const idx = secretCopy.indexOf(color); if (idx !== -1) { white++; secretCopy[idx] = null; } } });
+                const newGuesses = [...guesses, { pegs: currentGuess, feedback: { black, white } }]; setGuesses(newGuesses); setCurrentGuess([null, null, null, null]);
+                if (black === 4) { setGameOver(true); setWon(true); setCleoContext('mastermind_win'); onGameEnd('Mastermind', true, `${newGuesses.length} Guesses`, opp.name); } 
+                else if (newGuesses.length >= 10) { setGameOver(true); setWon(false); setCleoContext('mastermind_loss'); onGameEnd('Mastermind', false, `Failed (10 turns)`, opp.name); }
+            };
+            const getColorClass = (color) => { const map = { red: 'bg-red-400 shadow-inner', blue: 'bg-sky-400 shadow-inner', green: 'bg-emerald-400 shadow-inner', yellow: 'bg-yellow-300 shadow-inner', white: 'bg-white border border-slate-200 shadow-inner', black: 'bg-slate-700 shadow-inner' }; return map[color] || 'bg-slate-100 border-2 border-slate-200 border-dashed'; };
+
+            return (
+                <div className="flex flex-col lg:flex-row gap-8 h-full">
+                    <div className="flex-1 cartoon-panel p-4 relative overflow-hidden flex flex-col">
+                        <div className="flex justify-between items-center mb-4 px-2"><span className="text-slate-400 font-bold">Code Breaker</span><div className="flex items-center gap-2 text-sm text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200"><span>VS</span><div className="w-5 h-5 rounded-full border border-slate-200 overflow-hidden">{opp.avatarSvg}</div><span className="font-bold">{opp.name}</span></div></div>
+                        <div className="flex justify-center gap-4 mb-4 p-4 bg-sky-50 rounded-2xl border-2 border-sky-100 shrink-0">{gameOver ? secretCode.map((c, i) => (<div key={i} className={`w-12 h-12 rounded-full shadow-lg border-2 border-white ${getColorClass(c)} animate-bounce`} />)) : (Array(4).fill(0).map((_, i) => (<div key={i} className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 font-bold text-2xl">?</div>)))}</div>
+                        <div className="flex flex-col-reverse gap-2 overflow-y-auto pr-2 custom-scrollbar flex-1">{!gameOver && (<div className="flex items-center gap-4 p-3 rounded-2xl bg-white border-4 border-sky-200 shadow-sm shrink-0"><span className="text-sky-400 font-bold text-sm">TURN</span><div className="flex gap-3 flex-1 justify-center">{currentGuess.map((color, i) => (<div key={i} onClick={() => handlePegClick(i)} className={`w-10 h-10 rounded-full cursor-pointer transition-transform hover:scale-110 border-2 border-transparent hover:border-sky-300 ${getColorClass(color)}`} />))}</div><div className="w-16 flex justify-center"><Button onClick={submitGuess} variant="primary" className="!px-3 !py-1 !text-xs !rounded-xl" disabled={currentGuess.includes(null)}>GO</Button></div></div>)}{guesses.map((g, idx) => (<div key={idx} className="flex items-center gap-4 p-2 rounded-xl bg-slate-50 border border-slate-100 shrink-0"><span className="text-slate-400 font-bold text-sm w-8 text-right">{idx + 1}</span><div className="flex gap-3 flex-1 justify-center">{g.pegs.map((c, i) => <div key={i} className={`w-8 h-8 rounded-full border border-black/5 ${getColorClass(c)}`} />)}</div><div className="w-16 grid grid-cols-2 gap-1 bg-slate-200/50 p-1 rounded-lg">{Array(g.feedback.black).fill(0).map((_, i) => <div key={`b${i}`} className="w-3 h-3 rounded-full bg-rose-500" />)}{Array(g.feedback.white).fill(0).map((_, i) => <div key={`w${i}`} className="w-3 h-3 rounded-full bg-white border border-slate-300" />)}</div></div>))}</div>
+                    </div>
+                    <div className="w-full lg:w-72 flex flex-col gap-4 shrink-0"><Card title="Colors" icon={Icons.Gamepad2}><div className="grid grid-cols-3 gap-3 mb-6">{COLORS.map(c => (<button key={c} onClick={() => setSelectedColor(c)} className={`w-14 h-14 rounded-full transition-transform active:scale-95 border-4 ${getColorClass(c)} ${selectedColor === c ? 'border-sky-400 scale-110 shadow-xl' : 'border-white'}`} />))}</div><Button onClick={startNewGame} variant="outline" className="w-full"><Icons.Refresh className="w-4 h-4" /> Restart</Button></Card>{gameOver && (<div className={`p-6 rounded-3xl text-center animate-fade-in border-4 ${won ? 'bg-green-50 border-green-200' : 'bg-rose-50 border-rose-200'}`}><h3 className={`text-3xl font-black ${won ? 'text-green-500' : 'text-rose-500'}`}>{won ? "YAY!" : "AWW!"}</h3></div>)}</div>
+                </div>
+            );
+        };
+
+        // --- 10. PROFILE ---
+        const UserProfile = ({ user, onUpdateProfile, setCleoContext }) => {
+            const [username, setUsername] = React.useState(user?.username || '');
+            const [isEditing, setIsEditing] = React.useState(false);
+            const [showFlash, setShowFlash] = React.useState(false);
+            React.useEffect(() => { setCleoContext('profile'); }, []);
+            const handleSave = () => { onUpdateProfile({ username }); setIsEditing(false); };
+            const handleFileChange = (e) => { const file = e.target.files[0]; if (file) { if (file.size > 2000000) { alert("Too big! Keep it under 2MB."); return; } const reader = new FileReader(); reader.onloadend = () => { onUpdateProfile({ avatar: reader.result }); setShowFlash(true); setTimeout(() => setShowFlash(false), 500); }; reader.readAsDataURL(file); } };
+            const stats = user?.history || []; const wins = stats.filter(r => r.won).length;
+            return (
+                <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+                    {showFlash && <div className="flash-effect rounded-3xl"></div>}
+                    <Card className="col-span-1 text-center bg-white">
+                        <div className="w-40 h-40 mx-auto rounded-full bg-sky-100 border-4 border-sky-300 flex items-center justify-center mb-6 overflow-hidden relative group shadow-lg">{user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : <Icons.User className="w-20 h-20 text-sky-300" />}<label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity"><input type="file" accept="image/*" className="hidden" onChange={handleFileChange} /><Icons.Camera className="text-white w-10 h-10" /></label></div>
+                        {isEditing ? (<div className="flex gap-2 justify-center mb-4"><input value={username} onChange={(e) => setUsername(e.target.value)} className="bg-slate-100 border-2 border-slate-300 rounded-lg px-3 py-1 text-slate-700 w-32 focus:border-sky-400 outline-none" /><Button variant="primary" onClick={handleSave} className="!px-3 !py-1 !rounded-lg"><Icons.Save size={16}/></Button></div>) : (<h2 className="text-3xl font-black text-slate-700 mb-2 flex justify-center items-center gap-2">{user?.username} <button onClick={() => setIsEditing(true)} className="text-slate-300 hover:text-sky-400 transition-colors"><Icons.Brain size={20}/></button></h2>)}
+                        <p className="text-sky-400 font-bold tracking-widest uppercase text-sm">Level {Math.floor(wins / 3) + 1} Explorer</p>
+                        <div className="mt-6 text-left bg-orange-50 p-4 rounded-xl border border-orange-100 text-sm text-slate-600 relative"><strong className="text-orange-400 block mb-2 comic-font text-lg">Cleo's Photo Tips:</strong><ul className="list-disc pl-4 space-y-1 marker:text-orange-300"><li>Square pics look best!</li><li>Bright smiles = best vibes.</li><li>Dogs in photos? 10/10!</li></ul></div>
+                    </Card>
+                    <div className="col-span-2 flex flex-col gap-6">
+                        <Card title="Stats" icon={Icons.Trophy}><div className="grid grid-cols-3 gap-4 text-center"><div className="p-4 bg-slate-50 rounded-2xl border border-slate-100"><div className="text-4xl font-black text-slate-700">{stats.length}</div><div className="text-xs text-slate-400 font-bold uppercase mt-1">Games</div></div><div className="p-4 bg-green-50 rounded-2xl border border-green-100"><div className="text-4xl font-black text-green-500">{wins}</div><div className="text-xs text-green-400 font-bold uppercase mt-1">Wins</div></div><div className="p-4 bg-rose-50 rounded-2xl border border-rose-100"><div className="text-4xl font-black text-rose-500">{stats.length - wins}</div><div className="text-xs text-rose-400 font-bold uppercase mt-1">Losses</div></div></div></Card>
+                        <Card title="Adventures" icon={Icons.Sword}><div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">{stats.slice().reverse().map((game, i) => (<div key={i} className="flex justify-between items-center p-4 bg-white rounded-xl border-2 border-slate-100 hover:border-sky-300 transition-colors shadow-sm"><div className="flex flex-col gap-1"><div className="flex items-center gap-2">{game.game === 'Mastermind' ? <Icons.Brain className="text-purple-400 w-5 h-5"/> : game.game === 'Quiddler' ? <Icons.Book className="text-teal-400 w-5 h-5" /> : <Icons.Sparkles className="text-orange-400 w-5 h-5"/>}<span className="font-bold text-slate-700">{game.game}</span><span className="text-[10px] text-slate-400 uppercase ml-2 bg-slate-50 px-2 py-0.5 rounded">vs {game.opponent || 'CPU'}</span></div><span className="text-xs text-slate-400 font-bold">{new Date(game.timestamp).toLocaleDateString()}</span></div><div className="text-right"><span className={`block text-xs font-black px-3 py-1 rounded-full mb-1 ${game.won ? 'bg-green-100 text-green-600' : 'bg-rose-100 text-rose-600'}`}>{game.won ? 'VICTORY' : 'DEFEAT'}</span><span className="text-xs text-slate-400 font-mono">{game.score}</span></div></div>))}</div></Card>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 11. MAIN APP ---
+        const App = () => {
+            const [user, setUser] = React.useState(null);
+            const [view, setView] = React.useState('menu');
+            const [cleoContext, setCleoContext] = React.useState('menu');
+            const [opponent, setOpponent] = React.useState(OPPONENTS.jack);
+            const [showOpponentSelect, setShowOpponentSelect] = React.useState(false);
+            const [pendingGame, setPendingGame] = React.useState(null);
+
+            React.useEffect(() => { const userData = LocalDB.getData().user; setUser(userData); }, []);
+            React.useEffect(() => { if(view === 'menu') setCleoContext('menu'); }, [view]);
+
+            const handleGameEnd = (gameName, won, details, oppName) => { const updatedUser = LocalDB.addHistory(gameName, won, details, oppName); setUser({...updatedUser}); setView('menu'); };
+            const handleUpdateProfile = (data) => { const updatedUser = LocalDB.updateProfile(data); setUser({...updatedUser}); };
+            const initiateGame = (game) => { setPendingGame(game); setShowOpponentSelect(true); };
+            const startGameWithOpponent = (selectedOpponent) => { setOpponent(selectedOpponent); setView(pendingGame); setShowOpponentSelect(false); setPendingGame(null); };
+
+            const renderContent = () => {
+                switch(view) {
+                    case 'mastermind': return <MastermindGame onGameEnd={handleGameEnd} setCleoContext={setCleoContext} opponent={opponent} />;
+                    case 'mancala': return <MancalaGame onGameEnd={handleGameEnd} setCleoContext={setCleoContext} opponent={opponent} />;
+                    case 'quiddler': return <QuiddlerGame onGameEnd={handleGameEnd} setCleoContext={setCleoContext} opponent={opponent} />;
+                    case 'profile': return <UserProfile user={user} onUpdateProfile={handleUpdateProfile} setCleoContext={setCleoContext} />;
+                    default: return (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mt-10 px-4">
+                            <div onClick={() => initiateGame('mastermind')} className="cartoon-panel group h-72 cursor-pointer transition-transform hover:-translate-y-2 hover:shadow-2xl relative overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border-4 border-white"><div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity"><Icons.Brain className="w-32 h-32 text-violet-400 rotate-12" /></div><div className="absolute bottom-8 left-8 z-20"><h2 className="text-3xl font-black text-violet-500 mb-2">MASTERMIND</h2><p className="text-violet-400 font-bold bg-white/80 px-3 py-1 rounded-full inline-block">Code Breaker</p></div></div>
+                            <div onClick={() => initiateGame('mancala')} className="cartoon-panel group h-72 cursor-pointer transition-transform hover:-translate-y-2 hover:shadow-2xl relative overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50 border-4 border-white"><div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity"><Icons.Sparkles className="w-32 h-32 text-orange-400 -rotate-12" /></div><div className="absolute bottom-8 left-8 z-20"><h2 className="text-3xl font-black text-orange-500 mb-2">MANCALA</h2><p className="text-orange-400 font-bold bg-white/80 px-3 py-1 rounded-full inline-block">Gem Collector</p></div></div>
+                            <div onClick={() => initiateGame('quiddler')} className="cartoon-panel group h-72 cursor-pointer transition-transform hover:-translate-y-2 hover:shadow-2xl relative overflow-hidden bg-gradient-to-br from-teal-50 to-cyan-50 border-4 border-white"><div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity"><Icons.Book className="w-32 h-32 text-teal-400 rotate-6" /></div><div className="absolute bottom-8 left-8 z-20"><h2 className="text-3xl font-black text-teal-500 mb-2">QUIDDLER</h2><p className="text-teal-400 font-bold bg-white/80 px-3 py-1 rounded-full inline-block">Word Whiz</p></div></div>
+                        </div>
+                    );
+                }
+            };
+
+            return (
+                <div className="flex flex-col h-full relative">
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10"><div className="absolute top-[10%] left-[5%] text-sky-200 animate-cloud"><Icons.Sparkles className="w-12 h-12" /></div><div className="absolute top-[20%] right-[10%] text-sky-100 animate-cloud" style={{animationDelay: '2s'}}><Icons.Sparkles className="w-24 h-24" /></div><div className="absolute bottom-[10%] left-[15%] text-sky-100 animate-cloud" style={{animationDelay: '4s'}}><Icons.Sparkles className="w-16 h-16" /></div><div className="absolute top-[5%] left-[20%] w-32 h-12 bg-white rounded-full opacity-60 animate-cloud blur-xl"></div><div className="absolute top-[15%] right-[25%] w-48 h-16 bg-white rounded-full opacity-50 animate-cloud blur-xl" style={{animationDelay: '3s'}}></div></div>
+                    <nav className="h-20 flex items-center justify-between px-8 z-40 shrink-0"><div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('menu')}><div className="w-10 h-10 bg-sky-400 rounded-xl flex items-center justify-center font-black text-white text-xl shadow-lg group-hover:scale-110 transition-transform">A</div><span className="brand text-3xl font-black tracking-wide text-sky-500 drop-shadow-sm">ARCADE</span></div><div className="flex items-center gap-4"><button onClick={() => setView('profile')} className={`flex items-center gap-3 px-4 py-2 rounded-full border-2 transition-all shadow-sm hover:shadow-md ${view === 'profile' ? 'bg-white border-sky-400' : 'bg-white/60 border-white hover:bg-white'}`}><div className="w-8 h-8 rounded-full bg-sky-100 border-2 border-sky-200 overflow-hidden">{user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : <Icons.User className="w-full h-full p-1 text-sky-300" />}</div><span className="text-lg font-bold text-slate-600 comic-font">{user?.username || "Friend"}</span></button></div></nav>
+                    <main className="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar relative">{view !== 'menu' && (<button onClick={() => setView('menu')} className="mb-6 text-slate-400 hover:text-sky-500 font-bold flex items-center gap-2 transition-colors"><Icons.ChevronLeft className="w-5 h-5"/> Back to Fun</button>)}{renderContent()}</main>
+                    {showOpponentSelect && (<OpponentSelector onSelect={startGameWithOpponent} onCancel={() => { setShowOpponentSelect(false); setPendingGame(null); }} />)}
+                    <CleoAvatar context={cleoContext} opponentName={opponent?.name} />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
